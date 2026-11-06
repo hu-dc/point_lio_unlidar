@@ -1,0 +1,84 @@
+/**:
+    ros__parameters:
+        # ============================================================================
+        # Go2 —— 用【机身 IMU】建图（推荐）
+        #
+        #   IMU  : /go2/imu   sensor_msgs/Imu, ~500 Hz
+        #          ← scripts/lowstate_to_imu.py 把 /lowstate(unitree_go/LowState) 转过来
+        #   点云 : /utlidar/cloud  sensor_msgs/PointCloud2 (~14.7 Hz, frame utlidar_lidar)
+        #
+        # 为什么不用 /utlidar/imu（L1 雷达内置 IMU）：
+        #   实测 20261105 的 4 个 walk_308 bag，用 /utlidar/imu 时机器人一开始走动
+        #   （录包后约 20-30 s）姿态就失准，表现为高度一路往下掉、位置越跑越远
+        #   （几分钟内到上千/上万米）。换机身 IMU 后同一段数据不再发散。
+        #   对比数据见 README §8.4。
+        #
+        # 关键差异（相对 config/go2_l1.yaml）：
+        #   imu_topic     : /go2/imu
+        #   imu_time_inte : 0.003  (≈1/500 Hz，机身 IMU 高频)
+        #   extrinsic_T/R : 机身 IMU -> 雷达 的外参（来自 Ros2SLAM 的 Go2 标定）
+        #   fov_degree    : 180    det_range: 30
+        #   blind         : 0.5
+        # ============================================================================
+
+        common:
+            lid_topic: "/utlidar/cloud"
+            imu_topic: "/go2/imu"
+            con_frame: false
+            con_frame_num: 1
+            cut_frame: false
+            cut_frame_time_interval: 0.1
+            time_lag_imu_to_lidar: 0.0       # 桥接节点已按 /utlidar/imu 对齐时基
+
+        preprocess:
+            lidar_type: 5                    # 5 = UNILIDAR handler
+            scan_line: 12
+            scan_rate: 15
+            timestamp_unit: 0                # Go2 的 time 字段是秒
+            blind: 0.5
+
+        mapping:
+            imu_en: true
+            start_in_aggressive_motion: false
+            extrinsic_est_en: false          # 外参用下面标好的值，不在线估计
+            imu_time_inte: 0.003             # ≈1/500 Hz（机身 IMU）
+
+            satu_acc: 30.0
+            satu_gyro: 35.0
+            acc_norm: 9.81
+            lidar_meas_cov: 0.01
+            acc_cov_output: 500.0
+            gyr_cov_output: 1000.0
+            b_acc_cov: 0.0001
+            b_gyr_cov: 0.0001
+            imu_meas_acc_cov: 0.1
+            imu_meas_omg_cov: 0.1
+            gyr_cov_input: 0.01
+            acc_cov_input: 0.1
+
+            plane_thr: 0.1
+            match_s: 81.0
+            fov_degree: 180.0
+            det_range: 30.0
+
+            gravity_align: true
+            gravity: [0.0, 0.0, -9.810]
+            gravity_init: [0.0, 0.0, -9.810]
+
+            # 雷达在机身 IMU 坐标系下的位姿（与 ~/refs/Ros2SLAM/point_lio 的 Go2 标定一致）
+            extrinsic_T: [0.31502, 0.0, -0.089145]
+            extrinsic_R: [-0.965512, 0.0, 0.260358,
+                           0.0,      1.0, 0.0,
+                          -0.260358, 0.0, -0.965512]
+
+        odometry:
+            publish_odometry_without_downsample: true
+
+        publish:
+            path_en: true
+            scan_publish_en: true
+            scan_bodyframe_pub_en: false
+
+        pcd_save:
+            pcd_save_en: false               # launch 里用 pcd_save_en:=true 覆盖
+            interval: -1

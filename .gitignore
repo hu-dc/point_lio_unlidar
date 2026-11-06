@@ -1,0 +1,55 @@
+# ============================================================
+# Point-LIO for Unitree Go2 (ROS2 Humble) - .gitignore
+# 只保留源码 / 配置 / launch / 文档；构建产物、测试数据、运行时生成文件都不入库。
+# ============================================================
+
+# ---------- colcon 构建产物（工作区根目录） ----------
+build/
+install/
+log/
+
+# ---------- 本机测试 / 评测数据（体积大，约 639 MB） ----------
+eval/
+
+# ---------- ROS / LIO 运行时生成的文件 ----------
+# PCD 地图、点云、rosbag、录包
+*.pcd
+*.ply
+*.bag
+*.bag.active
+*.db3
+*.db3-wal
+*.db3-shm
+*.mcap
+*.orig
+
+# Point-LIO 运行时会在源码树里写这些调试日志（见 src/point_lio_unilidar/Log/guide.md）
+src/point_lio_unilidar/Log/*.txt
+src/point_lio_unilidar/Log/*.csv
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+
+# ---------- 编辑器 / IDE ----------
+.vscode/
+.idea/
+cmake-build-debug/
+CMakeLists.txt.user*
+compile_commands.json
+ccache/
+.cache/
+
+# ---------- 系统 / 临时文件 ----------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+*.log

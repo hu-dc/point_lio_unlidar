@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>point_lio_unilidar</name>
+  <version>0.0.0</version>
+  <description>
+    Point-LIO (ROS2 / Humble) for Unitree LiDAR, ported from
+    https://github.com/unitreerobotics/point_lio_unilidar (ROS1, based on
+    hku-mars/Point-LIO) and adapted to run directly on Unitree Go2 by
+    subscribing to /utlidar/cloud and /utlidar/imu.
+    Original algorithm: J. Zhang and S. Singh, LOAM (RSS 2014);
+    Point-LIO: D. He, W. Xu, et al.
+  </description>
+
+  <maintainer email="dflorea@uc.cl">Daniel Florea</maintainer>
+
+  <license>BSD</license>
+
+  <author email="lukelbmeng@gmail.com">Lingbo Meng (original ROS1 point_lio_unilidar)</author>
+  <author email="dflorea@uc.cl">Daniel Florea (ROS2 port)</author>
+
+  <!-- ROS2 uses ament as build system -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Dependencies are now also categorized as build, build_export, and exec_depend -->
+  <depend>rclcpp</depend> <!-- roscpp in ROS1 is replaced by rclcpp in ROS2 -->
+  <depend>rclpy</depend>  <!-- rospy is replaced by rclpy in ROS2 -->
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>tf2_ros</depend> <!-- tf in ROS1 is replaced by tf2 in ROS2 -->
+  <depend>pcl_ros</depend> <!-- For PCL support -->
+  <depend>pcl_conversions</depend> <!-- For PCL support -->
+  <depend>visualization_msgs</depend> <!-- For visualization_msgs support -->
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>ros2bag</exec_depend>
+  <!-- <depend>livox_ros_driver2</depend> -->
+
+  <!-- test_depend remains the same, but make sure the testing tools you use are compatible with ROS2 -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

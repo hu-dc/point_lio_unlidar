@@ -1,0 +1,77 @@
+/**:
+    ros__parameters:
+        # ============================================================================
+        # Unitree Go2 —— 直接用 Go2 自带话题建图（本节点不启动任何雷达驱动）
+        #
+        #   点云 : /utlidar/cloud   sensor_msgs/PointCloud2
+        #          fields: x, y, z, intensity (FLOAT32) + ring (UINT16) + time (FLOAT32)
+        #          time 单位 = 秒（扫描内相对时间，实测 0 ~ 0.065 s）
+        #          frame_id = utlidar_lidar, ~14.7 Hz, 约 1400 点/帧
+        #   IMU  : /utlidar/imu     sensor_msgs/Imu, ~250 Hz（L1 雷达内置 IMU）
+        #
+        #   以上字段已用 ros2 bag / 在线抓包实测核对（见 ~/go2_diag）。
+        #   lidar_type=5（UNILIDAR handler）只按字段名读取，
+        #   不使用 ring 的分段逻辑，所以 Go2 的 ring 0..11 可以直接喂进去。
+        # ============================================================================
+
+        common:
+            lid_topic: "/utlidar/cloud"
+            imu_topic: "/utlidar/imu"
+            con_frame: false                 # 是否把多帧拼成一帧
+            con_frame_num: 1
+            cut_frame: false                 # 是否把一帧切成多个子帧
+            cut_frame_time_interval: 0.1
+            time_lag_imu_to_lidar: 0.0       # IMU 与 LiDAR 的时间偏移（标定后再改）
+
+        preprocess:
+            lidar_type: 5                    # 5 = UNILIDAR handler
+            scan_line: 12                    # Go2 驱动 ring 取值 0..11（handler 实际不使用）
+            scan_rate: 15
+            timestamp_unit: 0                # 0-second / 1-ms / 2-us / 3-ns；Go2 是秒
+            blind: 0.3                       # 盲区（米），Go2 点云很稀，不要设太大
+
+        mapping:
+            imu_en: true
+            start_in_aggressive_motion: false
+            extrinsic_est_en: false           # 外参不标定时先关掉在线估计
+            imu_time_inte: 0.004             # = 1/250 Hz，与 /utlidar/imu 实测 249.7 Hz 一致
+            satu_acc: 30.0                   # IMU 加速度饱和值（m/s^2）
+            satu_gyro: 35.0                  # IMU 角速度饱和值（rad/s）
+            acc_norm: 9.81                   # IMU 加速度单位：9.81 = m/s^2
+            lidar_meas_cov: 0.01
+            acc_cov_output: 500.0
+            gyr_cov_output: 1000.0
+            b_acc_cov: 0.0001
+            b_gyr_cov: 0.0001
+            imu_meas_acc_cov: 0.1
+            imu_meas_omg_cov: 0.1
+            gyr_cov_input: 0.01
+            acc_cov_input: 0.1
+            plane_thr: 0.1
+            match_s: 81.0
+            fov_degree: 360.0                # Go2 头部 L1 水平视场 360°
+            det_range: 50.0
+            gravity_align: true
+            gravity: [0.0, 0.0, -9.810]
+            gravity_init: [0.0, 0.0, -9.810]
+
+            # LiDAR 在 IMU 坐标系下的位姿（imu -> lidar 的平移/旋转）
+            # Go2 的 /utlidar/cloud 和 /utlidar/imu 都来自同一个 L1 模组，先按单位阵跑通。
+            # 若官方 L1 默认值更贴合可替换为：
+            #   extrinsic_T: [0.007698, 0.014655, -0.00667]
+            extrinsic_T: [0.0, 0.0, 0.0]
+            extrinsic_R: [1.0, 0.0, 0.0,
+                          0.0, 1.0, 0.0,
+                          0.0, 0.0, 1.0]
+
+        odometry:
+            publish_odometry_without_downsample: true
+
+        publish:
+            path_en: true
+            scan_publish_en: true
+            scan_bodyframe_pub_en: false
+
+        pcd_save:
+            pcd_save_en: false               # launch 里用 pcd_save_en:=true 覆盖
+            interval: -1                     # -1 = 所有帧保存成一个 PCD
